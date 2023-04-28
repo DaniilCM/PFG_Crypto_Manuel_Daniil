@@ -27,54 +27,38 @@ export default function MyPurchases({ marketplace, nft, account }) {
         setLoading(false);
         setPurchases(purchases);
     }
+    
     useEffect(() => {
         loadPurchasedItems()
     }, [])
-    if (loading) return ( <
-        main style = {
-            { padding: "1rem 0" } } >
-        <
-        h2 > Loading... < /h2> <
-        /main>
+
+    if (loading) return ( 
+    <main style = {{ padding: "1rem 0" } } >
+        <h2> Loading... </h2> </main>
     );
-    return ( <
-        div className = 'flex justify-center' > {
-            purchases.length > 0 ?
-            <
-            div className = 'px-5 py-3 container' >
-            <
-            h2 > My Purchases < /h2> <
-            Row xs = { 1 }
-            md = { 2 }
-            lg = { 4 }
-            className = "g-4 py-3" > {
-                purchases.map((item, idx) => ( <
-                    Col key = { idx }
-                    className = "overflow-hidden" >
-                    <
-                    Card >
-                    <
-                    Card.Img variant = "top"
-                    src = { item.image }
-                    /> <
-                    Card.Footer > { ethers.utils.formatEther(item.totalPrice) }
-                    ETH <
-                    /Card.Footer> <
-                    /Card> <
-                    /Col>
-                ))
-            } <
-            /Row> <
-            /div> :
-                ( <
-                main style = {
-                    { padding: "1rem 0" } } >
-                <
-                h2 > No purchases < /h2> <
-                /main>
-            )
-        } <
-        /div>
-    );
+
+    return (
+        <div className='flex justify-center'>
+          {purchases.length > 0 ? (
+            <div className='px-5 py-3 container'>
+              <h2>My Purchases</h2>
+              <Row xs={1} md={2} lg={4} className="g-4 py-3">
+                {purchases.map((item, idx) => (
+                  <Col key={idx} className="overflow-hidden">
+                    <Card>
+                      <Card.Img variant="top" src={item.image} />
+                      <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+            </div>
+          ) : (
+            <main style={{ padding: "1rem 0" }}>
+              <h2>No purchases</h2>
+            </main>
+          )}
+        </div>
+      );
 
 }

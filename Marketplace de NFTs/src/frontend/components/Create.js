@@ -68,66 +68,26 @@ const Create = ({ marketplace, nft }) => {
         await (await nft.setApprovalForAll(marketplace.address, true));
     }
 
-    return ( <
-        div className = "container-fluid mt-5" >
-        <
-        h2 > Create your own NFT! < /h2> <
-        div className = 'row px-5 py-5 ' >
-        <
-        main role = "main"
-        className = 'col-lg-12 mx-auto'
-        style = {
-            { maxWidth: '1000px' } } >
-
-        <
-        div className = 'content mx-auto' >
-        <
-        Row className = 'g-4' >
-        <
-        Form.Control type = "file"
-        required name = "file"
-        onChange = { uploadToIPFS }
-        /> <
-        Form.Control onChange = {
-            (e) => setName(e.target.value) }
-        size = "lg"
-        required type = "text"
-        placeholder = "Name" / >
-        <
-        Form.Control onChange = {
-            (e) => setDescription(e.target.value) }
-        size = "lg"
-        required as = "textarea"
-        placeholder = "Description" / >
-        <
-        Form.Control onChange = {
-            (e) => setPrice(e.target.value) }
-        size = "lg"
-        required type = "number"
-        placeholder = 'Price (ETH)' / >
-        <
-        div className = 'g-grid px-0' >
-        <
-        Button onClick = { createNFT }
-        variant = "success"
-        size = "lg"
-        style = {
-            { marginRight: 50 } } >
-        Create!
-        <
-        /Button> <
-        Button onClick = { createNFTAndList }
-        variant = "primary"
-        size = "lg" >
-        Create and list NFT!
-        <
-        /Button> <
-        /div> <
-        /Row> <
-        /div> <
-        /main> <
-        /div> <
-        /div>
+    return (
+        <div className="container-fluid mt-5">
+            <h2>Create your own NFT!</h2>
+            <div className='row px-5 py-5'>
+                <main role="main" className='col-lg-12 mx-auto' style={{ maxWidth: '1000px' }}>
+                    <div className='content mx-auto'>
+                        <Row className='g-4'>
+                            <Form.Control type="file" required name="file" onChange={uploadToIPFS} />
+                            <Form.Control onChange={(e) => setName(e.target.value)} size="lg" required type="text" placeholder="Name" />
+                            <Form.Control onChange={(e) => setDescription(e.target.value)} size="lg" required as="textarea" placeholder="Description" />
+                            <Form.Control onChange={(e) => setPrice(e.target.value)} size="lg" required type="number" placeholder='Price (ETH)' />
+                            <div className='g-grid px-0'>
+                                <Button onClick={createNFT} variant="success" size="lg" style={{ marginRight: 50 }}>Create!</Button>
+                                <Button onClick={createNFTAndList} variant="primary" size="lg">Create and list NFT!</Button>
+                            </div>
+                        </Row>
+                    </div>
+                </main>
+            </div>
+        </div>
     );
 }
 
