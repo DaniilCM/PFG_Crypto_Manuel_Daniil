@@ -7,7 +7,8 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 contract Marketplace is ReentrancyGuard {
 
     address payable public immutable feeAccount;
-    uint public immutable feePercent;
+    address payable public ONGAddress;
+    uint public feePercent;
     uint public itemCount;
 
     struct Item {
@@ -27,7 +28,8 @@ contract Marketplace is ReentrancyGuard {
         address indexed nft,
         uint tokenId,
         uint price,
-        address indexed seller
+        address indexed seller,
+        address indexed ONGAddress
     );
     event Bought(
         uint itemId,
@@ -45,8 +47,9 @@ contract Marketplace is ReentrancyGuard {
         address indexed seller
     );
 
-    constructor (uint _feePercent) {
+    constructor (uint _feePercent, address payable _ONGAddress) {
         feeAccount = payable(msg.sender);
+        ONGAddress = _ONGAddress;
         feePercent = _feePercent;
     }
 
@@ -79,6 +82,7 @@ contract Marketplace is ReentrancyGuard {
         require(msg.value >= _totalPrice);
         require(!item.sold);
         item.seller.transfer(item.price);
+        payTax(_feePercent, _totalPrice);
         feeAccount.transfer(_totalPrice - item.price);
         item.sold = true;
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
@@ -88,7 +92,8 @@ contract Marketplace is ReentrancyGuard {
             item.tokenId,
             item.price,
             item.seller,
-            msg.sender
+            msg.sender,
+            ONGAddress
         );
     }
 
@@ -109,5 +114,20 @@ contract Marketplace is ReentrancyGuard {
             item.tokenId,
             msg.sender
         );
+    }
+
+    function setONGWalletAddress(address payable _ONGAddress) public {
+        require(_ONGAddress != address(0), "Invalid address");
+        ONGAddress = _ONGAddress;
+    }
+
+    function payTax(uint256 _feePercent, uint _totalPrice) public {
+        if (ONGAddress != address(0)) {
+            uint256 halfTax = _feePercent.div(2);
+            ONGAddress.transfer(halfTax);
+            feeAccount.transfer(halfTax.add(_totalPrice));
+        } else {
+            feeAccount.transfer(_feePercent);
+        }
     }
 }
