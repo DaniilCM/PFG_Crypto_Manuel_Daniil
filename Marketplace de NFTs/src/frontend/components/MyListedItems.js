@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Card, Col, Form, Row } from "react-bootstrap";
 import { ethers } from "ethers";
 
@@ -50,7 +50,7 @@ function renderSoldItems(items) {
 }
 
 function renderOwnedItems(items, marketplace, nft) {
-  const [price, setPrice] = useState(null);
+  let price = null;
 
   const createOffer = async (item, marketplace, price, nft) => {
     console.log(`prepare to send: ${item.nft} ${item.itemId} ${price} ${item}`);
@@ -77,7 +77,7 @@ function renderOwnedItems(items, marketplace, nft) {
                 <Button onClick={() => createOffer(item, marketplace, price, nft)} variant="primary" size="md">
                   Offer
                 </Button>
-                <Form.Control id="price" onChange={(e) => setPrice(e.target.value)} size="md" required type="number" placeholder="Price (ETH)" />
+                <Form.Control id="price" onChange={(e) => price = e.target.value} size="md" required type="number" placeholder="Price (ETH)" />
               </Card.Footer>
             </Card>
           </Col>
@@ -86,8 +86,6 @@ function renderOwnedItems(items, marketplace, nft) {
     </>
   );
 }
-
-import React, { useState, useEffect } from 'react';
 
 // Exporting the component as default
 export default function MyListedItems({ marketplace, nft, account }) {

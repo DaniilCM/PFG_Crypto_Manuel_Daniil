@@ -9,6 +9,7 @@ import Home from './Home';
 import Create from './Create';
 import MyListedItems from './MyListedItems';
 import MyPurchases from './MyPurchases';
+import Developers from './Developers';
 import MarketplaceAbi from '../contractsData/Marketplace.json';
 import MarketplaceAddress from '../contractsData/Marketplace-address.json';
 import NFTAbi from '../contractsData/NFT.json';
@@ -93,6 +94,10 @@ function App() {
                                 element={
                                     <MyPurchases marketplace={marketplace} nft={nft} account={account} />
                                 }
+                            />
+                            <Route
+                                path='/my_settings'
+                                element={<Developers marketplace={marketplace} nft={nft} />}
                             />
                         </Routes>
                     )}

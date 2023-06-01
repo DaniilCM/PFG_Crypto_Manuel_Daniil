@@ -3,12 +3,12 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract Marketplace is ReentrancyGuard {
-
+    using SafeMath for uint;
     address payable public immutable feeAccount;
-    address payable public ONGAddress;
-    uint public feePercent;
+    uint public immutable feePercent;
     uint public itemCount;
 
     struct Item {
@@ -22,19 +22,19 @@ contract Marketplace is ReentrancyGuard {
     }
 
     mapping(uint => Item) public items;
+    mapping(string => address payable) public ongs;
 
     event Offered(
         uint itemId,
         address indexed nft,
         uint tokenId,
         uint price,
-        address indexed seller,
-        address indexed ONGAddress
+        address indexed seller
     );
     event Bought(
         uint itemId,
         address indexed nft,
-        uint tokenId, 
+        uint tokenId,
         uint price,
         address indexed seller,
         address indexed buyer
@@ -43,17 +43,21 @@ contract Marketplace is ReentrancyGuard {
     event OfferCanceled(
         uint itemId,
         address indexed nft,
-        uint tokenId, 
+        uint tokenId,
         address indexed seller
     );
 
-    constructor (uint _feePercent, address payable _ONGAddress) {
+    constructor(uint _feePercent) {
         feeAccount = payable(msg.sender);
-        ONGAddress = _ONGAddress;
         feePercent = _feePercent;
+        ongs["CruzRoja"] = payable(0xce6fe87b0F99cAe738c1F40208e6929C6eB00049);
     }
 
-    function makeItem(IERC721 _nft, uint _tokenId, uint _price) external nonReentrant {
+    function makeItem(
+        IERC721 _nft,
+        uint _tokenId,
+        uint _price
+    ) external nonReentrant {
         require(_price > 0, "Price must be greater than zero");
         itemCount++;
         _nft.transferFrom(msg.sender, address(this), _tokenId);
@@ -66,24 +70,21 @@ contract Marketplace is ReentrancyGuard {
             false,
             false
         );
-        emit Offered(
-            itemCount, 
-            address(_nft),
-            _tokenId,
-            _price,
-            msg.sender
-        );
+        emit Offered(itemCount, address(_nft), _tokenId, _price, msg.sender);
     }
 
-    function purchaseItem(uint _itemId) external payable nonReentrant {
+    function purchaseItem(
+        uint _itemId,
+        string memory _ONG
+    ) external payable nonReentrant {
+        address payable ongAddress = ongs[_ONG];
         uint _totalPrice = getTotalPrice(_itemId);
         Item storage item = items[_itemId];
         require(_itemId > 0 && _itemId <= itemCount);
         require(msg.value >= _totalPrice);
         require(!item.sold);
+        payTax(_totalPrice, item.price, ongAddress);
         item.seller.transfer(item.price);
-        payTax(_feePercent, _totalPrice);
-        feeAccount.transfer(_totalPrice - item.price);
         item.sold = true;
         item.nft.transferFrom(address(this), msg.sender, item.tokenId);
         emit Bought(
@@ -92,13 +93,12 @@ contract Marketplace is ReentrancyGuard {
             item.tokenId,
             item.price,
             item.seller,
-            msg.sender,
-            ONGAddress
+            msg.sender
         );
     }
 
-    function getTotalPrice(uint _itemId) view public returns(uint) {
-        return ((items[_itemId].price*(100 + feePercent))/100);
+    function getTotalPrice(uint _itemId) public view returns (uint) {
+        return ((items[_itemId].price * (100 + feePercent)) / 100);
     }
 
     function cancelItemOffer(uint _itemId) external payable nonReentrant {
@@ -116,18 +116,20 @@ contract Marketplace is ReentrancyGuard {
         );
     }
 
-    function setONGWalletAddress(address payable _ONGAddress) public {
-        require(_ONGAddress != address(0), "Invalid address");
-        ONGAddress = _ONGAddress;
+    function payTax(
+        uint _totalPrice,
+        uint _itemPrice,
+        address payable _ONG
+    ) public {
+        uint tax = _totalPrice - _itemPrice;
+        _ONG.transfer(tax.div(2));
+        feeAccount.transfer(tax.div(2));
     }
 
-    function payTax(uint256 _feePercent, uint _totalPrice) public {
-        if (ONGAddress != address(0)) {
-            uint256 halfTax = _feePercent.div(2);
-            ONGAddress.transfer(halfTax);
-            feeAccount.transfer(halfTax.add(_totalPrice));
-        } else {
-            feeAccount.transfer(_feePercent);
-        }
+    function setONGWalletAddress(
+        address payable _ONGAddress,
+        string memory _ONGname
+    ) public {
+        ongs[_ONGname] = _ONGAddress;
     }
 }
