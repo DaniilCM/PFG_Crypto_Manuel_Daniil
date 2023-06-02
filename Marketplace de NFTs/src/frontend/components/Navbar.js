@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import nft from './nft.png';
 
-const Navigation = ({ web3Handler, account }) => {
+const Navigation = ({ web3Handler, account, addressIsDeveloper }) => {
     return (
         <Navbar expand="lg" bg="primary" variant="dark">
             <Container>
@@ -17,7 +17,9 @@ const Navigation = ({ web3Handler, account }) => {
                         <Nav.Link as={Link} to="/create">Create</Nav.Link>
                         <Nav.Link as={Link} to="/my-listed-items">Items</Nav.Link>
                         <Nav.Link as={Link} to="/my-purchases">Purchases</Nav.Link>
-                        <Nav.Link as={Link} to="/my_settings">Developers</Nav.Link>
+                        {
+                            addressIsDeveloper && (<Nav.Link as={Link} to="/my_settings">Developers</Nav.Link>)
+                        }
                     </Nav>
                     <Nav>
                         {account ? (

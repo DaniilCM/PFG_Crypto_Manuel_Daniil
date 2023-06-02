@@ -25,6 +25,8 @@ function App() {
     const [account, setAccount] = useState(null);
     const [nft, setNFT] = useState({});
     const [marketplace, setMarketplace] = useState({});
+    let addressIsDeveloper = null;
+    const developerAccounts = ['0X4DDFD6148E0079C15419C11AF6877A7BC4BA2755'];
 
     const web3Handler = async () => {
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
@@ -39,6 +41,12 @@ function App() {
 
         window.ethereum.on('accountsChanged', async function (accounts) {
             setAccount(accounts[0]);
+            if (account != null && developerAccounts.includes(account.toUpperCase())) {
+                addressIsDeveloper = true;
+            }
+            else {
+                addressIsDeveloper = false;
+            }
             await web3Handler();
         })
 
@@ -61,7 +69,7 @@ function App() {
         <BrowserRouter>
             <div className='App'>
                 <>
-                    <Navigation web3Handler={web3Handler} account={account} />
+                    <Navigation web3Handler={web3Handler} account={account} addressIsDeveloper={addressIsDeveloper} />
                 </>
                 <div>
                     {loading ? (
@@ -97,7 +105,7 @@ function App() {
                             />
                             <Route
                                 path='/my_settings'
-                                element={<Developers marketplace={marketplace} nft={nft} />}
+                                element={<Developers marketplace={marketplace} nft={nft} account={account} />}
                             />
                         </Routes>
                     )}
