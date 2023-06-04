@@ -2,7 +2,16 @@ import { Link } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
 import nft from './nft.png';
 
-const Navigation = ({ web3Handler, account, addressIsDeveloper }) => {
+const Navigation = ({ web3Handler, account }) => {
+    console.log(account);
+    let developerAccounts = ['0XDE55F8921B6D12FC1D0DCA39223D6EF9D4C6CC3A'];
+    let addressIsDeveloper = null;
+    if (account != null && developerAccounts.includes(account.toUpperCase())) {
+        addressIsDeveloper = true;
+    }
+    else {
+        addressIsDeveloper = false;
+    }
     return (
         <Navbar expand="lg" bg="primary" variant="dark">
             <Container>

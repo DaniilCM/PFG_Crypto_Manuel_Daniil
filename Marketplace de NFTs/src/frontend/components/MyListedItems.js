@@ -17,10 +17,10 @@ function renderListedItems(items, marketplace) {
               <Card.Img variant="top" src={item.image} />
               <Card.Footer>
                 {ethers.utils.formatEther(item.totalPrice)} ETH
-                <Button onClick={() => cancelOffer(item)} variant="primary" size="md">
+              </Card.Footer>
+              <Button onClick={() => cancelOffer(item)} variant="primary" size="md">
                   Cancel Offer
                 </Button>
-              </Card.Footer>
             </Card>
           </Col>
         ))}

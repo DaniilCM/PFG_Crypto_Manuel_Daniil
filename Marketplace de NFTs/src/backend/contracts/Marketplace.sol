@@ -129,7 +129,7 @@ contract Marketplace is ReentrancyGuard {
     function setONGWalletAddress(
         address payable _ONGAddress,
         string memory _ONGname
-    ) public {
+    ) external {
         ongs[_ONGname] = _ONGAddress;
     }
 }

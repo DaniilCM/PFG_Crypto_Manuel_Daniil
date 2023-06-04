@@ -62,7 +62,7 @@ const Home = ({ marketplace, nft }) => {
           <h1>Last Listed!</h1>
           <Row xs={1} md={2} lg={4} className="g-4 py-5">
             {items.map((item, idx) => (
-              <Col key={idx} className="overflow-hidden">
+              <Col key={idx} className="select-container">
                 <Card>
                   <Card.Img variant="top" src={item.image} />
                   <Card.Body color="secondary">
@@ -76,7 +76,7 @@ const Home = ({ marketplace, nft }) => {
                         onChange={handleChange}
                         options={ongs}
                       />
-                      <Button onClick={() => buyMarketItem(item, selectedOption.value)} variant="primary" size="lg">
+                      <Button onClick={() => buyMarketItem(item, selectedOption.value)} variant="primary" size="lg" style={{ marginTop: '10px' }}>
                         Buy by {ethers.utils.formatEther(item.totalPrice)} ETH
                       </Button>
                     </div>
