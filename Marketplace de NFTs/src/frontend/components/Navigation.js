@@ -1,33 +1,35 @@
 import { Link } from "react-router-dom";
 import { Navbar, Nav, Button, Container } from 'react-bootstrap';
-import nft from './nft.png';
+import logo from './img/logo.png';
 
-const Navigation = ({ web3Handler, account }) => {
+const Navigation = ({ web3Handler, account, owner }) => {
+
     console.log(account);
-    let developerAccounts = ['0XDE55F8921B6D12FC1D0DCA39223D6EF9D4C6CC3A'];
+    console.log(owner);
     let addressIsDeveloper = null;
-    if (account != null && developerAccounts.includes(account.toUpperCase())) {
+    if (account != null && owner != null && account.toLowerCase() == owner.toLowerCase()) {
         addressIsDeveloper = true;
     }
     else {
         addressIsDeveloper = false;
     }
     return (
-        <Navbar expand="lg" bg="primary" variant="dark">
+        <Navbar expand="lg" className="custom-navbar">
             <Container>
-                <Navbar.Brand>
-                    <img src={nft} width="40" height="40" className="" alt="" />
-                    &nbsp; NFT Marketplace
+                <Navbar.Brand className="text-white">
+                    <img src={logo} width="40" height="50" className="" alt="Logo" />
+                    &nbsp; Marketplace
                 </Navbar.Brand>
-                <Navbar.Toggle aria-controls="navbar navbar-dark bg-primary" />
-                <Navbar.Collapse id="navbar navbar-dark bg-primary">
-                    <Nav className="me-auto">
-                        <Nav.Link as={Link} to="/">Home</Nav.Link>
-                        <Nav.Link as={Link} to="/create">Create</Nav.Link>
-                        <Nav.Link as={Link} to="/my-listed-items">Items</Nav.Link>
-                        <Nav.Link as={Link} to="/my-purchases">Purchases</Nav.Link>
-                        {
-                            addressIsDeveloper && (<Nav.Link as={Link} to="/my_settings">Developers</Nav.Link>)
+                <Navbar.Toggle aria-controls="navbar navbar-light bg-primary" />
+                <Navbar.Collapse id="navbar navbar-light bg-primary">
+                    <Nav className="me-auto mx-auto"> {/* Agrega la clase "mx-auto" para centrar los elementos */}
+                        <Nav.Link as={Link} to="/" className="text-white nav-link"> Market </Nav.Link>
+                        <Nav.Link as={Link} to="/createNFT" className="text-white nav-link"> Create NFT </Nav.Link>
+                        <Nav.Link as={Link} to="/profile" className="text-white nav-link"> Profile </Nav.Link>
+                        {   
+                            addressIsDeveloper && (
+                            
+                            <Nav.Link as={Link} to="/my_settings" className="text-white"> Developers </Nav.Link>)
                         }
                     </Nav>
                     <Nav>

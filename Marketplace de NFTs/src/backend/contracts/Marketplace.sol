@@ -23,6 +23,7 @@ contract Marketplace is ReentrancyGuard {
 
     mapping(uint => Item) public items;
     mapping(string => address payable) public ongs;
+    string[] public ongsName;
 
     event Offered(
         uint itemId,
@@ -50,7 +51,8 @@ contract Marketplace is ReentrancyGuard {
     constructor(uint _feePercent) {
         feeAccount = payable(msg.sender);
         feePercent = _feePercent;
-        ongs["CruzRoja"] = payable(0xce6fe87b0F99cAe738c1F40208e6929C6eB00049);
+        ongsName = new string[](0);
+        ongs["owner"] =  payable(msg.sender);
     }
 
     function makeItem(
@@ -130,6 +132,15 @@ contract Marketplace is ReentrancyGuard {
         address payable _ONGAddress,
         string memory _ONGname
     ) external {
+        ongsName.push(_ONGname);
         ongs[_ONGname] = _ONGAddress;
+    }
+
+    function getFeeAccountAddress() external view returns (address) {
+        return feeAccount;
+    }
+
+    function getOngsName() external view returns (string[] memory) {
+        return ongsName;
     }
 }

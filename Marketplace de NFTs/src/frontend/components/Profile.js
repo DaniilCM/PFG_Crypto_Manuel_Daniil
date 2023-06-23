@@ -1,10 +1,15 @@
 import { useState, useEffect } from "react";
-import { Button, Card, Col, Form, Row } from "react-bootstrap";
+import { Button, Card, Col, Form, Row, Tabs, Tab } from "react-bootstrap";
 import { ethers } from "ethers";
 
 function renderListedItems(items, marketplace) {
   const cancelOffer = async (item) => {
+    try{
     await (await marketplace.cancelItemOffer(item.itemId)).wait();
+    } catch (error) {
+      console.log("Offer cancelation failed.");
+    }
+    window.location.href = window.location.origin + '/profile';
   };
 
   return (
@@ -13,14 +18,19 @@ function renderListedItems(items, marketplace) {
       <Row xs={1} md={2} lg={4} className="g-4 py-3">
         {items.map((item, idx) => (
           <Col key={idx} className="overflow-hidden">
-            <Card>
-              <Card.Img variant="top" src={item.image} />
+            <Card className="custom-card">
+              <Card.Img variant="top" src={item.image} className="card-img-top" />
+              <Card.Body color="secondary">
+                <Card.Title>{item.name}</Card.Title>
+              </Card.Body>
               <Card.Footer>
-                {ethers.utils.formatEther(item.totalPrice)} ETH
+                <div className="d-grid">
+                  {ethers.utils.formatEther(item.totalPrice)} ETH
+                  <Button onClick={() => cancelOffer(item)} variant="primary" size="md" style={{ marginTop: '10px', backgroundColor: '#333333' }}>
+                    Cancel Offer
+                  </Button>
+                </div>
               </Card.Footer>
-              <Button onClick={() => cancelOffer(item)} variant="primary" size="md">
-                  Cancel Offer
-                </Button>
             </Card>
           </Col>
         ))}
@@ -36,8 +46,11 @@ function renderSoldItems(items) {
       <Row xs={1} md={2} lg={4} className="g-4 py-3">
         {items.map((item, idx) => (
           <Col key={idx} className="overflow-hidden">
-            <Card>
-              <Card.Img variant="top" src={item.image} />
+            <Card className="custom-card">
+              <Card.Img variant="top" src={item.image} className="card-img-top" />
+              <Card.Body color="secondary">
+                <Card.Title>{item.name}</Card.Title>
+              </Card.Body>
               <Card.Footer>
                 For {ethers.utils.formatEther(item.totalPrice)} ETH - Received {ethers.utils.formatEther(item.price)} ETH
               </Card.Footer>
@@ -45,6 +58,33 @@ function renderSoldItems(items) {
           </Col>
         ))}
       </Row>
+    </>
+  );
+}
+
+function renderPurchasedItems(purchases) {
+  return (
+    <>
+      <h2>My Purchases</h2>
+      {purchases.length > 0 ? (
+        <Row xs={1} md={2} lg={4} className="g-4 py-3">
+          {purchases.map((item, idx) => (
+            <Col key={idx} className="overflow-hidden">
+              <Card className="custom-card">
+                <Card.Img variant="top" src={item.image} className="card-img-top" />
+                <Card.Body color="secondary">
+                  <Card.Title>{item.name}</Card.Title>
+                </Card.Body>
+                <Card.Footer>{ethers.utils.formatEther(item.totalPrice)} ETH</Card.Footer>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      ) : (
+        <main style={{ padding: "1rem 0" }}>
+          <h2>No purchases</h2>
+        </main>
+      )}
     </>
   );
 }
@@ -58,8 +98,13 @@ function renderOwnedItems(items, marketplace, nft) {
     if (price == null || price <= 0) {
       alert("The selected price cannot be empty or 0.");
     } else {
+      try{
       console.log(`prepare to send: ${item.nft} ${item.itemId} ${price} ${item}`);
       await (await marketplace.makeItem(nft.address, item.itemId, ethers.utils.parseEther(price))).wait();
+      window.location.href = window.location.origin + '/profile';
+      } catch (error) {
+        console.log("Offer creation failed.")
+      }
     }
   };
 
@@ -69,15 +114,16 @@ function renderOwnedItems(items, marketplace, nft) {
       <Row xs={1} md={2} lg={4} className="g-4 py-3">
         {items.map((item, idx) => (
           <Col key={idx} className="overflow-hidden">
-            <Card>
-              <Card.Header>{item.name}</Card.Header>
-              <Card.Img variant="top" src={item.image} />
+            <Card className="custom-card">
+              <Card.Img variant="top" src={item.image} className="card-img-top" />
+              <Card.Body color="secondary">
+                <Card.Title>{item.name}</Card.Title>
+              </Card.Body>
               <Card.Footer>
-                {console.log(`prepare to send: ${item.nft} ${item.itemId} ${price} ${item}`)}
-                <Button onClick={() => createOffer(item, marketplace, price, nft)} variant="primary" size="md">
+                <Form.Control id="price" onChange={(e) => price = e.target.value} size="md" required type="number" placeholder="Price (ETH)" />
+                <Button onClick={() => createOffer(item, marketplace, price, nft)} variant="primary" size="md" style={{ marginTop: '10px', backgroundColor: '#333333' }}>
                   Offer
                 </Button>
-                <Form.Control id="price" onChange={(e) => price = e.target.value} size="md" required type="number" placeholder="Price (ETH)" />
               </Card.Footer>
             </Card>
           </Col>
@@ -87,14 +133,16 @@ function renderOwnedItems(items, marketplace, nft) {
   );
 }
 
+
 // Exporting the component as default
-export default function MyListedItems({ marketplace, nft, account }) {
+export default function Profile({ marketplace, nft, account }) {
 
   // State variables initialization
   const [loading, setLoading] = useState(true);
   const [listedItems, setListedItems] = useState([]);
   const [soldItems, setSoldItems] = useState([]);
   const [ownedItems, setOwnedItems] = useState([]);
+  const [purchases, setPurchases] = useState([]);
 
   // Function to load listed, sold and owned items
   const loadListedItems = async () => {
@@ -148,6 +196,7 @@ export default function MyListedItems({ marketplace, nft, account }) {
       }
     }
 
+
     // Updating the state variables
     setLoading(false);
     setListedItems(listedItems);
@@ -155,9 +204,36 @@ export default function MyListedItems({ marketplace, nft, account }) {
     setOwnedItems(ownedItems)
   }
 
+  const loadPurchasedItems = async () => {
+    const filter = marketplace.filters.Bought(null, null, null, null, null, account);
+    const results = await marketplace.queryFilter(filter);
+    const purchases = await Promise.all(results.map(async i => {
+      i = i.args;
+      const uri = await nft.tokenURI(i.tokenId);
+      const response = await fetch(uri);
+      const metadata = await response.json();
+      const totalPrice = await marketplace.getTotalPrice(i.itemId);
+      let purchasedItem = {
+        totalPrice,
+        price: i.price,
+        itemId: i.itemId,
+        name: metadata.name,
+        description: metadata.description,
+        image: metadata.image
+      };
+      return purchasedItem;
+    }))
+    setLoading(false);
+    setPurchases(purchases);
+  }
+
   // Effect hook to load the items
   useEffect(() => {
     loadListedItems()
+  }, [])
+
+  useEffect(() => {
+    loadPurchasedItems()
   }, [])
 
   // If loading is true, show a loading message
@@ -176,13 +252,38 @@ export default function MyListedItems({ marketplace, nft, account }) {
     )
   }
 
+  if (loading) return (
+    <main style={{ padding: "1rem 0" }} >
+      <h2> Loading... </h2> </main>
+  );
+
+
   // If there are assets, render them
   return (
     <div className='flex justify-center'>
       <div className='px-5 py-3 container'>
-        {listedItems.length > 0 && renderListedItems(listedItems, marketplace)}
-        {soldItems.length > 0 && renderSoldItems(soldItems)}
-        {ownedItems.length > 0 && renderOwnedItems(ownedItems, marketplace, nft)}
+        <Tabs defaultActiveKey='owned' className='custom-tabs'>
+          <Tab eventKey='owned' title='Owned'>
+            <div className='custom-tab-content'>
+              {renderOwnedItems(ownedItems, marketplace, nft)}
+            </div>
+          </Tab>
+          <Tab eventKey='listed' title='Listed'>
+            <div className='custom-tab-content'>
+              {renderListedItems(listedItems, marketplace)}
+            </div>
+          </Tab>
+          <Tab eventKey='sold' title='Sold'>
+            <div className='custom-tab-content' >
+              {renderSoldItems(soldItems)}
+            </div>
+          </Tab>
+          <Tab eventKey='purchases' title='Purchases'>
+            <div className='custom-tab-content' >
+              {renderPurchasedItems(purchases)}
+            </div>
+          </Tab>
+        </Tabs>
       </div>
     </div>
   );

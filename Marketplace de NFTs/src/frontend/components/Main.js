@@ -4,11 +4,10 @@ import {
     Route
 } from 'react-router-dom';
 
-import Navigation from './Navbar';
-import Home from './Home';
-import Create from './Create';
-import MyListedItems from './MyListedItems';
-import MyPurchases from './MyPurchases';
+import Navigation from './Navigation';
+import Market from './Market';
+import CreateNFT from './CreateNFT';
+import Profile from './Profile';
 import Developers from './Developers';
 import MarketplaceAbi from '../contractsData/Marketplace.json';
 import MarketplaceAddress from '../contractsData/Marketplace-address.json';
@@ -17,42 +16,51 @@ import NFTAddress from '../contractsData/NFT-address.json';
 import { useState } from 'react';
 import { ethers } from 'ethers';
 import { Spinner } from 'react-bootstrap';
-import './App.css';
+import './Main.css';
 
-function App() {
+function Main() {
 
     const [loading, setLoading] = useState(true);
     const [account, setAccount] = useState(null);
     const [nft, setNFT] = useState({});
     const [marketplace, setMarketplace] = useState({});
-
+    const [owner, setOwner] = useState(null);
+    const [ongs, setOngs] = useState(null);
     const web3Handler = async () => {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        console.log(accounts)
-        setAccount(accounts[0]);
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        const signer = provider.getSigner();
-
-        window.ethereum.on('chainChanged', (chainId) => {
-            window.location.reload();
-        })
-
-        window.ethereum.on('accountsChanged', async function (accounts) {
+        try {
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            console.log(accounts)
             setAccount(accounts[0]);
-            window.location.reload();
-            window.location.href = window.location.origin + '/';
-            await web3Handler();
-        })
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            window.ethereum.on('chainChanged', (chainId) => {
+                window.location.reload();
+            })
 
-        loadContracts(signer);
+            window.ethereum.on('accountsChanged', async function (accounts) {
+                setAccount(accounts[0]);
+                window.location.reload();
+                window.location.href = window.location.origin + '/';
+                await web3Handler();
+            })
+
+            loadContracts(signer);
+        } catch (error) {
+            console.log("Login failed.")
+        }
     }
 
     const loadContracts = async (signer) => {
-        const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer);
-        setMarketplace(marketplace);
-        const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
-        setNFT(nft);
-        setLoading(false);
+        try {
+            const marketplace = new ethers.Contract(MarketplaceAddress.address, MarketplaceAbi.abi, signer);
+            setMarketplace(marketplace);
+            const nft = new ethers.Contract(NFTAddress.address, NFTAbi.abi, signer);
+            setNFT(nft);
+            setLoading(false);
+            setOwner(await marketplace.getFeeAccountAddress());
+        } catch (error) {
+            console.log("Marketplace connection failed.");
+        }
     }
 
     window.onload = (event) => {
@@ -63,7 +71,7 @@ function App() {
         <BrowserRouter>
             <div className='App'>
                 <>
-                    <Navigation web3Handler={web3Handler} account={account} />
+                    <Navigation web3Handler={web3Handler} account={account} owner={owner} />
                 </>
                 <div>
                     {loading ? (
@@ -75,22 +83,16 @@ function App() {
                         <Routes>
                             <Route
                                 path='/'
-                                element={<Home marketplace={marketplace} nft={nft} />}
+                                element={<Market marketplace={marketplace} nft={nft} />}
                             />
                             <Route
-                                path='/create'
-                                element={<Create marketplace={marketplace} nft={nft} />}
+                                path='/createNFT'
+                                element={<CreateNFT marketplace={marketplace} nft={nft} />}
                             />
                             <Route
-                                path='/my-listed-items'
+                                path='/profile'
                                 element={
-                                    <MyListedItems marketplace={marketplace} nft={nft} account={account} />
-                                }
-                            />
-                            <Route
-                                path='/my-purchases'
-                                element={
-                                    <MyPurchases marketplace={marketplace} nft={nft} account={account} />
+                                    <Profile marketplace={marketplace} nft={nft} account={account} />
                                 }
                             />
                             <Route
@@ -105,4 +107,4 @@ function App() {
     );
 }
 
-export default App;
+export default Main;
